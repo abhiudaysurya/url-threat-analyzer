@@ -1,0 +1,47 @@
+version: '3.8'
+
+services:
+  redis:
+    image: redis:7-alpine
+    container_name: url-analyzer-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  api:
+    build: url-analyzer
+    container_name: url-analyzer-api
+    ports:
+      - "8000:8000"
+    depends_on:
+      redis:
+        condition: service_healthy
+    environment:
+      - REDIS_URL=redis://redis:6379
+      - SAFE_BROWSING_API_KEY=${SAFE_BROWSING_API_KEY:-}
+      - CACHE_TTL=3600
+      - RATE_LIMIT=10/minute
+      - MAX_URL_LENGTH=2048
+      - SCRAPER_TIMEOUT=12000
+      - LOG_LEVEL=INFO
+      - MODEL_PATH=app/ml/artifacts/model.pkl
+      - SCALER_PATH=app/ml/artifacts/scaler.pkl
+    volumes:
+      - ./app/ml/artifacts:/app/app/ml/artifacts
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+volumes:
+  redis_data:
