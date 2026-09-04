@@ -6,7 +6,7 @@ class Settings(BaseSettings):
     """Application configuration"""
 
     REDIS_URL: str = "redis://localhost:6379"
-    SAFE_BROWSING_API_KEY: str = "AIzaSyDQc9B_CZz2ykSd_bqUQGl4kD3dL6Tbqoo"
+    SAFE_BROWSING_API_KEY: str = ""
     CACHE_TTL: int = 3600
     RATE_LIMIT: str = "10/minute"
     MAX_URL_LENGTH: int = 2048
